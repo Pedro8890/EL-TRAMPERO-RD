@@ -1,0 +1,51 @@
+#include "zygisk.hpp"
+#include "server.h"
+#include <pthread.h>
+#include <string.h>
+#include <unistd.h>
+#include <android/log.h>
+
+#define LOGI(...) __android_log_print(ANDROID_LOG_INFO, "ElTrampero", __VA_ARGS__)
+#define TARGET_PKG "com.dts.freefireth"
+
+static bool es_juego = false;
+
+static void* hilo_servidor(void*) {
+    // Esperamos 10s para que el juego cargue la memoria antes de escuchar
+    sleep(10); 
+    server_loop(); 
+    return nullptr;
+}
+
+class ElTramperoModule : public zygisk::Module {
+public:
+    void onLoad(zygisk::Api* api, JNIEnv* env) override {
+        this->api = api;
+        this->env = env;
+    }
+
+    void preAppSpecialize(zygisk::AppSpecializeArgs* args) override {
+        const char* nice = args->nice_name ? env->GetStringUTFChars(args->nice_name, nullptr) : nullptr;
+        es_juego = (nice && strcmp(nice, TARGET_PKG) == 0);
+        if (nice) env->ReleaseStringUTFChars(args->nice_name, nice);
+
+        if (!es_juego) {
+            // Si no es el juego, descargar el módulo de este proceso
+            api->setOption(1); // 1 = DLCLOSE_MODULE_LIBRARY
+        }
+    }
+
+    void postAppSpecialize(const zygisk::AppSpecializeArgs*) override {
+        if (!es_juego) return;
+        LOGI("Cargado en %s — iniciando socket", TARGET_PKG);
+        pthread_t t;
+        pthread_create(&t, nullptr, hilo_servidor, nullptr);
+        pthread_detach(t);
+    }
+
+private:
+    zygisk::Api* api;
+    JNIEnv* env;
+};
+
+REGISTER_ZYGISK_MODULE(ElTramperoModule)
