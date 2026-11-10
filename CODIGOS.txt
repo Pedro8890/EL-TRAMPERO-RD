@@ -1,0 +1,36 @@
+TRADICIONALES:
+juntos
+
+local v1_buscar = {"c1 36 41 06", "18 7b 82 06", "a8 e5 ac 00", "7d ac 91 01", "ea 10 66 02", "f8 9c 66 02", "b6 bb 07 05", "28 99 92 05", "7f cd 9b 05", "db 17 87 06", "95 6a a5 0b", "3c 93 82 0d", "a4 7d d8 00", "ae e0 13 01", "c8 5e 31 05", "2d 6c bc 0a", "38 f8 96 03", "eb f7 ea 06", "f9 8c 27 07", "7a 2b 6f 07", "59 d7 cf 07", "1a 5b 15 08", "db 54 cc 09", "c8 fd 01 0d", "e6 c2 7e 0d", "c4 b7 7f 0d", "fd 08 31 00", "73 81 8e 04", "99 71 e9 06", "29 a4 3e 07", "1c 32 08 08", "80 8e f8 0b", "f5 7c d3 01"}
+local v1_editar = {"b9 46 5c 02"}
+
+local v2_buscar = {"81 e9 9d 27", "e4 98 c6 04", "53 39 bf 01", "65 dd 8d 02", "40 6c a7 02", "bc f8 51 04", "98 bb e1 04", "f9 89 66 07", "ce ca db 0d", "46 b1 3d 0e", "01 06 85 00", "58 78 96 05", "bd c1 17 0a", "64 41 93 0c", "57 81 e5 01", "dc 03 a4 07", "0d 59 1b 0d", "b5 53 3b 0e", "e1 04 50 00", "f7 db 22 03", "18 9d 29 03", "06 9f fb 04", "c6 1a 09 0a", "7d 9f 0a 0a", "72 4e 6d 0b", "a7 d2 73 01", "db 42 25 08", "e9 9d 27 00"}
+local v2_editar = {"40 2b 2c 0a"}
+
+
+COLORES:
+
+
+local v1_list_buscar = {"bd 76 ca 01"}
+local v1_list_editar = {"3a 7f 57 0a"}
+
+local v2_list_buscar = {"bd 76 ca 01"}
+local v2_list_editar = {"ba a7 99 0b"}
+
+local v3_list_buscar = {"bd 76 ca 01", "cc 80 12 01"}
+local v3_list_editar = {"63 b0 3a 0e", "86 05 41 04"}
+
+local v4_list_buscar = {"bd 76 ca 01", "cc 80 12 01 "}
+local v4_list_editar = {"8c cf a4 02", "f1 46 5e 0a"}
+
+local v5_list_buscar = {"bd 76 ca 01", "cc 80 12 01"}
+local v5_list_editar = {"63 b0 3a 0e", "c8 64 c8 0a"}
+
+local v6_list_buscar = {"bd 76 ca 01", "cc 80 12 01"}
+local v6_list_editar = {"09 aa bf 0d", "f1 46 5e 0a"}
+
+local v7_list_buscar = {"96 8d 66 02"}
+local v7_list_editar = {"cc 2d a6 0b"}
+
+local v8_list_buscar = {"00010000000000000000803F00000000"}
+local v8_list_editar = {"0001000000000000000080BF00000000"}
