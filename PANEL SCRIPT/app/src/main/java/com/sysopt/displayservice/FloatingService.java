@@ -41,12 +41,12 @@ public class FloatingService extends Service {
     
     private static final String DEV_DIR             = "/dev";
     private static final String BINARY_PREFIX       = ".sys_";
-    private static final String SOCKET_NAME         = "eltrampero_rd";
-    private static final String ASSET_NAME          = "gfx_config.bin";
     
+    private static final String ASSET_NAME          = "gfx_config.bin";
     private static final int    ANDROID_O           = Build.VERSION_CODES.O;
     private static final int    ANDROID_M           = Build.VERSION_CODES.M;
     private static final String GAME_PACKAGE        = "com.dts.freefireth";
+    
     private static final long   INTERNET_CUT_DELAY_MS = 1_000L;
     private static final int    DRAG_UMBRAL_PX        = 10;
 
@@ -130,6 +130,7 @@ public class FloatingService extends Service {
                 activarInternet();
                 String su = RootDetector.encontrarSu();
                 if (su != null && binaryPath != null) {
+                    // CORRECCIÓN 2.4: Solo rm -f, sin pkill
                     RootDetector.ejecutar(new String[]{su, "-c", "rm -f " + binaryPath}, 3000);
                 }
             }
@@ -353,7 +354,7 @@ public class FloatingService extends Service {
         toast("🟢 Internet reactivado", Toast.LENGTH_SHORT);
     }
 
-    // --- BINARIO SOLO PARA LOGIN/ADMIN ---
+    // CORRECCIÓN 2.1: Enviar binario por stdin sin tocar el disco
     private void prepararBinario() {
         binaryPath = DEV_DIR + "/" + BINARY_PREFIX + Long.toHexString(System.nanoTime());
         
@@ -385,13 +386,28 @@ public class FloatingService extends Service {
         }
     }
 
-    private String ejecutarBinarioLogin(String args) {
+    // CORRECCIÓN 2.2: obtenerUrlGAS por stdin
+    private String obtenerUrlGAS() {
         if (!binarioListo || binaryPath == null) return null;
         String su = RootDetector.encontrarSu();
         if (su == null) return null;
         
-        String comando = "exec " + binaryPath + " " + args + "\n";
+        String secKey = SecurityManager.getSecurityKey(this);
+        String comando = "exec " + binaryPath + " --get-url '" + secKey + "'\n";
         
+        String salida = ejecutarConStdin(su, comando, 5000);
+        if (salida == null) return null;
+
+        for (String linea : salida.split("\n")) {
+            if (linea.contains("[+] URL=")) {
+                return linea.substring(linea.indexOf("[+] URL=") + 8).trim();
+            }
+        }
+        return null;
+    }
+
+    // CORRECCIÓN 2.3 y 2.4: Helper con timeout real
+    private String ejecutarConStdin(String su, String comando, long timeoutMs) {
         Process proceso = null;
         try {
             proceso = new ProcessBuilder(su).redirectErrorStream(true).start();
@@ -413,7 +429,7 @@ public class FloatingService extends Service {
             lector.setDaemon(true);
             lector.start();
 
-            long limite = System.currentTimeMillis() + 5000;
+            long limite = System.currentTimeMillis() + timeoutMs;
             boolean terminado = false;
             while (System.currentTimeMillis() < limite) {
                 try { proceso.exitValue(); terminado = true; break; }
@@ -421,7 +437,7 @@ public class FloatingService extends Service {
                     try { Thread.sleep(100); } catch (InterruptedException ie) { break; } 
                 }
             }
-            if (!terminado) { proceso.destroy(); return null; }
+            if (!terminado) { proceso.destroy(); return "TIMEOUT"; }
             try { lector.join(1000); } catch (InterruptedException ignored) {}
             return salida.toString();
         } catch (Exception e) {
@@ -431,38 +447,48 @@ public class FloatingService extends Service {
         }
     }
 
-    private String obtenerUrlGAS() {
-        String secKey = credManager.getSecurityKey();
-        String salida = ejecutarBinarioLogin("--get-url " + secKey);
-        if (salida == null) return null;
-        for (String linea : salida.split("\n")) {
-            if (linea.contains("[+] URL=")) {
-                return linea.substring(linea.indexOf("[+] URL=") + 8).trim();
-            }
+    private String ejecutarComandoMod(String opcion) {
+        String su = RootDetector.encontrarSu();
+        if (su == null) return "NO_ROOT";
+        
+        if (!new java.io.File(binaryPath).exists()) {
+            prepararBinario();
         }
-        return null;
+        if (!binarioListo) return "NO_BINARIO";
+
+        String secKey = credManager.getSecurityKey();
+        String comando = "exec " + binaryPath + " " + opcion + " '" + secKey + "'\n";
+        
+        String resultado = ejecutarConStdin(su, comando, 20000);
+        
+        if (resultado == null) return "ERROR";
+        if (resultado.equals("TIMEOUT")) return "TIMEOUT";
+        if (resultado.contains("Juego no encontrado") || resultado.contains("not found")) return "NOT_FOUND";
+        if (resultado.contains("VERSION_INCOMPATIBLE")) return "VERSION_INCOMPATIBLE";
+        if (resultado.contains("ACCESO DENEGADO")) return "SESION_EXPIRADA";
+        if (resultado.contains("[+] Activado")) return "OK";
+        
+        return "PATRON_NO_ENCONTRADO";
     }
 
-    // --- SOCKET PARA EL MÓDULO ZYGISK (SWITCHES) ---
-    private String enviarComandoModulo(String comando) {
-        android.net.LocalSocket socket = new android.net.LocalSocket();
-        try {
-            socket.connect(new android.net.LocalSocketAddress(
-                SOCKET_NAME, android.net.LocalSocketAddress.Namespace.ABSTRACT));
-            socket.setSoTimeout(10000);
-            OutputStream os = socket.getOutputStream();
-            os.write((comando + "\n").getBytes());
-            os.flush();
-            InputStream is = socket.getInputStream();
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            byte[] buf = new byte[256]; int n;
-            while ((n = is.read(buf)) != -1) bos.write(buf, 0, n);
-            return bos.toString().trim();
-        } catch (Exception e) {
-            return null;
-        } finally {
-            try { socket.close(); } catch (Exception ignored) {}
+    private String ejecutarComandoAdmin(String password, String expiry) {
+        String su = RootDetector.encontrarSu();
+        if (su == null) return null;
+        
+        if (!new java.io.File(binaryPath).exists()) {
+            prepararBinario();
         }
+        if (!binarioListo) return null;
+
+        String passEscapada = password.replace("'", "'\\''");
+        String comando = "exec " + binaryPath + " --admin '" + passEscapada + "'";
+        
+        if (expiry != null && !expiry.trim().isEmpty()) {
+            comando += " '" + expiry.trim().replace("'", "") + "'";
+        }
+        comando += "\n";
+
+        return ejecutarConStdin(su, comando, 15000);
     }
 
     private void configurarSwitch(int id, final String opcion, final String nombre) {
@@ -491,14 +517,16 @@ public class FloatingService extends Service {
                 executor.execute(new Runnable() {
                     @Override
                     public void run() {
-                        String secKey = credManager.getSecurityKey();
-                        final String res = enviarComandoModulo(opcion + " " + secKey);
+                        if (!new java.io.File(binaryPath).exists()) {
+                            prepararBinario();
+                        }
                         
+                        final String res = ejecutarComandoMod(opcion);
                         mainHandler.post(new Runnable() {
                             @Override
                             public void run() {
                                 progressBar.setVisibility(View.GONE);
-                                if (res != null && res.contains("[+] Activado")) {
+                                if ("OK".equals(res)) {
                                     sw.setText(nombre + " [🔥 ACTIVADO]");
                                 } else {
                                     sw.setOnCheckedChangeListener(null);
@@ -507,10 +535,14 @@ public class FloatingService extends Service {
                                     sw.setText(nombre);
 
                                     String msg;
-                                    if (res == null) msg = "❌ Módulo no instalado o Free Fire no está abierto";
-                                    else if (res.contains("VERSION_INCOMPATIBLE")) msg = "⚠️ Versión de Free Fire no soportada";
-                                    else if (res.contains("ACCESO DENEGADO")) msg = "⚠️ Sesión VIP expirada. Reinicia la app.";
-                                    else msg = "⚠️ Patron no encontrado — actualiza los codigos";
+                                    if ("NO_ROOT".equals(res)) msg = "❌ Root no detectado";
+                                    else if ("NO_BINARIO".equals(res)) msg = "⏳ Binario no listo. Espera un momento.";
+                                    else if ("NOT_FOUND".equals(res)) msg = "⚠️ Abre Free Fire primero";
+                                    else if ("TIMEOUT".equals(res)) msg = "⏱️ Timeout — reinicia la app";
+                                    else if ("VERSION_INCOMPATIBLE".equals(res)) msg = "⚠️ Versión de Free Fire no soportada";
+                                    else if ("PATRON_NO_ENCONTRADO".equals(res)) msg = "⚠️ Patron no encontrado — actualiza los codigos";
+                                    else if ("SESION_EXPIRADA".equals(res)) msg = "⚠️ Sesión VIP expirada. Reinicia la app.";
+                                    else msg = "❌ Error al aplicar: " + nombre;
                                     
                                     Toast.makeText(FloatingService.this, msg, Toast.LENGTH_LONG).show();
                                 }
@@ -549,19 +581,14 @@ public class FloatingService extends Service {
             new AdminFloatingView.Callback() {
                 @Override
                 public String ejecutarAdmin(String password, String expiry) {
-                    String args = "--admin '" + password.replace("'", "'\\''") + "'";
-                    if (expiry != null && !expiry.trim().isEmpty()) {
-                        args += " '" + expiry.trim().replace("'", "") + "'";
-                    }
-                    return ejecutarBinarioLogin(args);
+                    if (!new java.io.File(binaryPath).exists()) prepararBinario();
+                    return ejecutarComandoAdmin(password, expiry);
                 }
-                
                 @Override
                 public String subirAlGAS(AdminCredentialManager.Credencial cred) {
                     if (urlGAS == null) return "Espera un momento. El servidor se está preparando.";
                     return adminCredManager.subirAlGAS(urlGAS, cred);
                 }
-                
                 @Override
                 public void onActivarInternet() {
                     executor.execute(new Runnable() {
@@ -575,7 +602,6 @@ public class FloatingService extends Service {
                         }
                     });
                 }
-                
                 @Override
                 public void onCerrar(boolean volverACortarInternet) {
                     adminFloatingView = null;
