@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="290dp"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="#F0121212"
+    android:padding="12dp"
+    android:elevation="10dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="🔐 PANEL ADMIN"
+        android:textColor="#FFD700"
+        android:textStyle="bold"
+        android:textSize="14sp"
+        android:gravity="center"
+        android:paddingBottom="6dp"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#444444"
+        android:layout_marginBottom="10dp"/>
+
+    <ProgressBar
+        android:id="@+id/pb_admin"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:indeterminate="true"
+        android:visibility="gone"
+        android:layout_marginBottom="8dp"/>
+
+    <!-- FASE 1 -->
+    <LinearLayout
+        android:id="@+id/layout_fase1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="visible">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Contraseña de admin:"
+            android:textColor="#AAAAAA"
+            android:textSize="11sp"
+            android:paddingBottom="4dp"/>
+
+        <EditText
+            android:id="@+id/et_admin_pass"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:inputType="textPassword"
+            android:maxLength="20"
+            android:background="#1E1E1E"
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
+            android:hint="••••••••"
+            android:textColorHint="#666666"
+            android:layout_marginBottom="6dp"/>
+
+        <TextView
+            android:id="@+id/tv_err_fase1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#FF4444"
+            android:textSize="11sp"
+            android:gravity="center"
+            android:paddingBottom="6dp"
+            android:visibility="gone"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btn_cancelar"
+                android:layout_width="0dp"
+                android:layout_height="34dp"
+                android:layout_weight="1"
+                android:text="CANCELAR"
+                android:background="#CC880000"
+                android:textColor="#FFFFFF"
+                android:textStyle="bold"
+                android:textSize="11sp"
+                android:layout_marginRight="6dp"/>
+
+            <Button
+                android:id="@+id/btn_acceder"
+                android:layout_width="0dp"
+                android:layout_height="34dp"
+                android:layout_weight="1"
+                android:text="ACCEDER"
+                android:background="#CC007700"
+                android:textColor="#FFFFFF"
+                android:textStyle="bold"
+                android:textSize="11sp"/>
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- FASE 2 -->
+    <LinearLayout
+        android:id="@+id/layout_fase2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <!-- CAMPO MODIFICADO: Ahora pide días -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Días de duración (Ej: 5, 30):"
+            android:textColor="#AAAAAA"
+            android:textSize="11sp"
+            android:paddingBottom="4dp"/>
+
+        <EditText
+            android:id="@+id/et_gen_expiry"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:inputType="number"
+            android:maxLength="5"
+            android:background="#1E1E1E"
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
+            android:hint="Ej: 30"
+            android:textColorHint="#555555"
+            android:layout_marginBottom="8dp"/>
+
+        <Button
+            android:id="@+id/btn_generar"
+            android:layout_width="match_parent"
+            android:layout_height="36dp"
+            android:text="⚙  GENERAR CREDENCIALES"
+            android:background="#CC005577"
+            android:textColor="#00FFFF"
+            android:textStyle="bold"
+            android:textSize="11sp"
+            android:layout_marginBottom="8dp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#1A1A1A"
+            android:padding="8dp"
+            android:layout_marginBottom="8dp">
+
+            <TextView
+                android:id="@+id/tv_gen_id"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="ID:         —"
+                android:textColor="#00FF88"
+                android:textSize="11sp"
+                android:typeface="monospace"
+                android:paddingBottom="2dp"/>
+
+            <TextView
+                android:id="@+id/tv_gen_usuario"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Usuario:    —"
+                android:textColor="#00FF88"
+                android:textSize="11sp"
+                android:typeface="monospace"
+                android:paddingBottom="2dp"/>
+
+            <TextView
+                android:id="@+id/tv_gen_pass"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Contraseña: —"
+                android:textColor="#00FF88"
+                android:textSize="11sp"
+                android:typeface="monospace"
+                android:paddingBottom="2dp"/>
+
+            <TextView
+                android:id="@+id/tv_gen_expiry"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Expira:     —"
+                android:textColor="#00FF88"
+                android:textSize="11sp"
+                android:typeface="monospace"/>
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btn_copiar"
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+            android:text="📋 COPIAR TODO"
+            android:background="#CC001133"
+            android:textColor="#00CCFF"
+            android:textStyle="bold"
+            android:textSize="10sp"
+            android:layout_marginBottom="6dp"/>
+
+        <TextView
+            android:id="@+id/tv_result"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#FFAA00"
+            android:textSize="11sp"
+            android:gravity="center"
+            android:paddingBottom="6dp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btn_subir"
+                android:layout_width="0dp"
+                android:layout_height="34dp"
+                android:layout_weight="1"
+                android:text="SUBIR AL GAS"
+                android:background="#CC004400"
+                android:textColor="#00FF88"
+                android:textStyle="bold"
+                android:textSize="10sp"
+                android:enabled="false"
+                android:layout_marginRight="6dp"/>
+
+            <Button
+                android:id="@+id/btn_cerrar_admin"
+                android:layout_width="0dp"
+                android:layout_height="34dp"
+                android:layout_weight="1"
+                android:text="✖ CERRAR"
+                android:background="#CC880000"
+                android:textColor="#FFFFFF"
+                android:textStyle="bold"
+                android:textSize="10sp"/>
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

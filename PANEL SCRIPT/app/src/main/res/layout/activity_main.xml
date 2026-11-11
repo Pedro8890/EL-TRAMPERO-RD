@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#121212"
+    android:gravity="center"
+    android:orientation="vertical">
+
+    <!-- Un icono simple para que no se vea vacío -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="⚙️"
+        android:textSize="48sp"
+        android:paddingBottom="16dp"/>
+
+    <!-- Texto genérico de sistema -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Configurando servicio..."
+        android:textColor="#AAAAAA"
+        android:textSize="16sp"
+        android:textStyle="bold"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Por favor, acepta los permisos."
+        android:textColor="#666666"
+        android:textSize="12sp"
+        android:paddingTop="8dp"/>
+
+    <!-- Un pequeño spinner de carga -->
+    <ProgressBar
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:indeterminate="true"
+        android:indeterminateTint="#00FF66"
+        android:layout_marginTop="24dp"/>
+
+</LinearLayout>
